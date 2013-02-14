@@ -63,9 +63,12 @@ EOT
             my $list_marker = '  * ';
             my $depth = find_depth($dir);
             my $indent = q{    } x $depth;
-            
+
             if (-d and $_ ne '.') {
-                say {$toc_file} $indent . $list_marker . $_;
+                say {$toc_file} $indent .
+                  $list_marker .
+                  "[$_/]($File::Find::name/toc.html)";
+                create_mini_toc_here($File::Find::name);
             }
             elsif (-f and m/\.md$/ and $_ ne 'toc.md' and
                                        $_ ne 'index.md') {
@@ -81,7 +84,7 @@ EOT
     close $toc_file;
 }
 
-# Process md files.
+# Process all md files.
 find(
     sub {
         if (-f and m/\.md$/) {
@@ -107,19 +110,73 @@ find(
 # Main is done.
 
 # ======================================================================
-# Header goes just after `<body>` and footer goes just before `</body>`.
+# Gets called while in dirs that `find` has brought us to. Is
+# passed directory names beginning with './' (ex. './' and './foo/bar').
+sub create_mini_toc_here {
+    my ($full_path_of_dir) = @_;
+    my $unq_name = basename $full_path_of_dir;
+    $full_path_of_dir =~ s{^\./}{};
+    chdir $unq_name;
+    my @things_here = glob '*';
+    open my $toc_file, '>', 'toc.md';
+    say {$toc_file} qq{% Contents of "$full_path_of_dir"\n};
+    for (@things_here) {
+        if (-d) {
+            say {$toc_file} "  * [$_/]($_/toc.html)";
+        }
+        elsif (-f and m/\.md$/ and $_ ne 'toc.md') {
+            my $h = $_;
+            $h =~ s/\.md$/.html/;
+            my $t = get_title_for($_);
+            say {$toc_file} "  * [$t]($h)";
+        }
+    }
+    close $toc_file;
+    chdir '..';
+}
+
+# Header goes just after `<body>`. Footer goes just before `</body>`.
+# $doc_path comes in looking like: './a.md', './b/c.md', './d/e/f.md', etc.
 sub create_temp_header_footer_files {
     my ($doc_path) = @_;
-    my $depth = find_depth($doc_path) - 1;
-    my $prefix = '../' x $depth;
     $doc_path =~ s{^\./}{};
-    $doc_path =~ s/\.md$//;
-    $doc_path =~ s{/}{ ➞ }g;
+
+    my $link_path_prefix = '../' x find_depth($doc_path);
+
+    my $basename = basename $doc_path;
+    $basename =~ s/\.md$/.html/;
+
+    my $dirname  = dirname $doc_path;
+    my $breadcrumb_trail = '';
+
+    if ($dirname eq '.') {
+        $breadcrumb_trail .= $basename;
+    }
+    else {
+        my @dirnames = split m{/}, $dirname;
+        @dirnames = reverse @dirnames;
+        # We reverse them because we want to start with the dir
+        # that the file is in, and then as we go further up, our
+        # links to little's toc's have more '../'s in them.
+
+        my @linkified_dirnames = ();
+        my $count = 0;
+        for (@dirnames) {
+            push @linkified_dirnames,
+              qq{<a href="} . ('../' x $count) . qq{toc.html">$_</a>};
+            $count++;
+        }
+
+        @linkified_dirnames = reverse @linkified_dirnames;
+
+        $breadcrumb_trail .= join '/', @linkified_dirnames;
+        $breadcrumb_trail .= "/$basename";
+    }
 
     my $nav_bar_html = <<"EOT";
-<a href="${prefix}index.html">Home</a> &nbsp;
-  <a href="${prefix}toc.html">ToC</a> &nbsp;&nbsp;
-  ($doc_path)
+<a href="${link_path_prefix}index.html">Home</a> &nbsp;
+  <a href="${link_path_prefix}toc.html">ToC</a> &nbsp;&nbsp;
+  (This is: $breadcrumb_trail)
 EOT
     open my $before, '>', '/tmp/before.html';
     say {$before} <<"EOT";
