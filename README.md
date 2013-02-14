@@ -5,8 +5,9 @@ Produces html docs from markdown files (using
 It's expected that the pandoc-markdown files are arranged in
 usefully-name subdirectories.
 
-Rippledoc also generates a not-especially-ordered table of contents
-for you.
+Rippledoc also generates a not-especially-ordered top-level table of
+contents for you, as well as little directory listing toc files for
+each subdirectory.
 
 Rippledoc is written in Perl 5.
 
@@ -33,11 +34,15 @@ Rippledoc produces this:
         toc.md
         toc.html
         foo/
+            toc.md
+            toc.html
             bar.md
             bar.html
             baz.md
             baz.html
             moo/
+                toc.md
+                toc.html
                 aa.md
                 aa.html
                 bb.md
@@ -84,8 +89,8 @@ Run the script from a directory containing docs.
   * All other .md files must have their first line be like
     "`% Title of this doc`".
 
-  * Don't create a toc.md file. This program takes care of that, and
-    if you create one it will be overwritten.
+  * Don't create any toc.md files anywhere. Rippledoc takes care of that.
+    If you create any, they will be overwritten.
 
 
 
@@ -94,6 +99,8 @@ Run the script from a directory containing docs.
   * Currently, this program doesn't provide any manual control of the
     ordering of items in the table of contents.
 
+  * Currently, this program quietly re-generates all
+    table-of-contents files upon every run.
 
 
 # License

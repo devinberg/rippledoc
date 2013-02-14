@@ -99,7 +99,9 @@ find(
                 my $pandoc_command = "pandoc -s -S --mathjax " .
                   "--css=${prefix}styles.css -B /tmp/before.html " .
                     "-A /tmp/after.html -o $html_filename $md_filename";
-                say "Processing $File::Find::name ...";
+                unless ($md_filename eq 'toc.md') {
+                    say "Processing $File::Find::name ...";
+                }
                 system $pandoc_command;
             }
         }
