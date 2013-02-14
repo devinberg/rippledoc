@@ -1,11 +1,11 @@
 # Rippledoc
 
-Produces html docs from markdown files (using
-[Pandoc](http://johnmacfarlane.net/pandoc/) for the heavy lifting).
-It's expected that the pandoc-markdown files are arranged in
-usefully-name subdirectories.
+Rippledoc produces easily-navigable html docs from nested directories
+of markdown files (using [Pandoc](http://johnmacfarlane.net/pandoc/)
+for the heavy lifting). It requires no configuration, and only
+requires you follow a couple of conventions described below.
 
-Rippledoc also generates a not-especially-ordered top-level table of
+Rippledoc generates a not-especially-ordered top-level table of
 contents for you, as well as little directory listing toc files for
 each subdirectory.
 
