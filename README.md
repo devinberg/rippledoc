@@ -1,3 +1,5 @@
+Note: This is my modified version for personal use. The original description is maintained below.
+
 # Rippledoc
 
 Rippledoc produces easily-navigable html docs from nested directories
